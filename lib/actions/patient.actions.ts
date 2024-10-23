@@ -77,12 +77,7 @@ export const registerPatient = async ({
 			console.log("No identification document provided.", file);
 			file = null; // Set file to null if no document is provided.
 		}
-		console.log("HEre:", {
-			identificationDocumentId: file?.$id ? file?.$id : null,
-			identificationDocumentUrl: file?.$id
-				? `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${file.$id}/view?project=${PROJECT_ID}`
-				: null,
-		});
+
 		const newPatient = await databases.createDocument(
 			DATABASE_ID!,
 			PATIENT_COLLECTION_ID!,
@@ -94,9 +89,22 @@ export const registerPatient = async ({
 			},
 		);
 
-		console.log("New patient: ", newPatient);
 		return parseStringify(newPatient);
 	} catch (error) {
 		console.log("Error registering patient", error);
+	}
+};
+
+export const getPatient = async (userId: string) => {
+	try {
+		const patient = await databases.listDocuments(
+			DATABASE_ID!,
+			PATIENT_COLLECTION_ID!,
+			[Query.equal("userId", [userId])],
+		);
+
+		return parseStringify(patient.documents[0]);
+	} catch (error) {
+		console.error(error);
 	}
 };
