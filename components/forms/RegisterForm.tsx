@@ -334,10 +334,7 @@ const RegisterForm = ({ user }: { user: User }) => {
 							<FormControl>
 								<FileUploader
 									files={field.value}
-									onChange={(files) => {
-										field.onChange;
-										console.log(files);
-									}}
+									onChange={(files) => field.onChange(files)}
 								/>
 							</FormControl>
 						)}

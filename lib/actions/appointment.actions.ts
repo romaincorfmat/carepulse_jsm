@@ -5,8 +5,9 @@ import {
 	APPOINTMENT_COLLECTION_ID,
 	DATABASE_ID,
 	databases,
+	messaging,
 } from "../appwrite.config";
-import { parseStringify } from "../utils";
+import { formatDateTime, parseStringify } from "../utils";
 import { Appointment } from "@/types/appwrite.types";
 import { revalidatePath } from "next/cache";
 
@@ -108,11 +109,41 @@ export const updateAppointment = async ({
 		}
 
 		// SMS Confimation
+		const smsMessage = `Hi, it's John from Carepulse.
+		${
+			type === "schedule"
+				? `Your appointment has been scheduled for ${
+						formatDateTime(appointment.schedule!).dateTime
+				  } with Dr. ${appointment.primaryPhysician}`
+				: `We regret to inform you that your apppointment has been cancelled fo the following reason: ${appointment.cancellationReason}`
+		}`;
+
+		await sendSMSNotification(userId, smsMessage);
+
 		console.log("Appointment updated successfully:");
 
 		revalidatePath(`/admin`);
 		return parseStringify(updatedAppointment);
 	} catch (error) {
 		console.log("Error updating appointment:", error);
+	}
+};
+
+export const sendSMSNotification = async (
+	userId: string,
+	content: string,
+) => {
+	try {
+		// Implement SMS sending logic using Twilio and appwrite
+		const message = await messaging.createSms(
+			ID.unique(),
+			content,
+			[],
+			[userId],
+		);
+
+		return parseStringify(message);
+	} catch (error) {
+		console.log("Failed to send SMS Notification: ", error);
 	}
 };
