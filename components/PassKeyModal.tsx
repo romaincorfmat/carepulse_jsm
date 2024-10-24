@@ -39,18 +39,37 @@ const PassKeyModal = () => {
 			? window.localStorage.getItem("accessKey")
 			: null;
 
-	useEffect(() => {
-		const accessKey = encryptedKey && decryptKey(encryptedKey);
+	// useEffect(() => {
+	// 	const accessKey = encryptedKey && decryptKey(encryptedKey);
 
-		if (path) {
-			if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
-				setOpen(false);
-				router.push("/admin");
-			} else {
-				setOpen(true);
-			}
+	// 	if (path) {
+	// 		if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
+	// 			setOpen(false);
+	// 			router.push("/admin");
+	// 		} else {
+	// 			setOpen(true);
+	// 		}
+	// 	}
+	// }, [encryptedKey]);
+
+	//Use of sessionStorage instead of localStorage
+	useEffect(() => {
+		// Check for stored passkey in sessionStorage on page load
+		const encryptedKey =
+			typeof window !== "undefined"
+				? sessionStorage.getItem("accessKey")
+				: null;
+
+		const accessKey = encryptedKey
+			? decryptKey(encryptedKey)
+			: null;
+
+		// Only allow access to /admin if passkey matches
+		if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
+			setOpen(false);
+			router.push("/admin");
 		}
-	}, [encryptedKey]);
+	}, [path, router]);
 
 	const validatePasskey = (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -58,12 +77,15 @@ const PassKeyModal = () => {
 		e.preventDefault();
 		if (passKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
 			const encryptedKey = encryptKey(passKey);
-			localStorage.setItem("accessKey", encryptedKey);
+			// localStorage.setItem("accessKey", encryptedKey);
+			sessionStorage.setItem("accessKey", encryptedKey);
+			router.push("/admin");
 			setOpen(false);
 		} else {
 			setError("Invalid passKey. Please try again.");
 		}
 	};
+
 	return (
 		<AlertDialog
 			open={open}
